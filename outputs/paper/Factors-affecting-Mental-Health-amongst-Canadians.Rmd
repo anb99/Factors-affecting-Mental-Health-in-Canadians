@@ -1,0 +1,216 @@
+---
+title: "Factors affecting Mental Health amongst Canadians"
+author: 
+  - Athaliah Biju and Yuxuan Zhao
+thanks: "Code and data are available at https://github.com/anb99/"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: "This paper takes a look at mental health in Canada."
+output:
+  bookdown::pdf_document2
+toc: FALSE
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+```
+
+```{r data_cleaning, include = FALSE}
+  
+    clean_cgss <- read_csv("gss.csv", show_col_types = FALSE)
+
+    labs <- c(paste(seq(0, 95, by = 5), seq(0 + 5 - 1, 100 - 1, by = 5),
+                sep = "-"), paste(100, "+", sep = ""))
+    clean_cgss$age_range <- cut(clean_cgss$age, breaks = c(seq(0,100, by = 5), Inf),labels = labs , right = FALSE)
+    
+```
+
+
+# Introduction
+
+Mental health is one of the most compelling global trending subjects, particularly in Canada. It includes "our emotional, psychological and social well-being" [@cdc]. According to the WHO, 450 million people worldwide struggle with mental illness, which includes 6.7 million Canadians [@camh].
+Many different factors can affect our mental health. The main objective of this paper is to analyze how different socioeconomic variables influence mental health in Canadians, to see what information can be gleaned from the data we discovered, and how the statistics represent mental health in Canada.
+Our paper has been divided into 5 sections. Section \@ref(data) talks about the data, the data source, the methodology of the survey and variables. Section \@ref(results) visualizes and describes the data analysis. Section \@ref(discussion) goes throught some interesting trends.
+
+# Data {#data}
+
+In this paper, we run our analysis in `R` [@citeR]. The dataset was obtained from the Computing in the Humanities and Social Services (CHASS) Data Center by the University of Toronto, from the Survey Documentation and Analysis database [@citeSDA]. The dataset was cleaned by Rohan Alexander and Samantha Caetano using the `tidyverse` [@citeTidyverse] and `janitor` [@citeJanitor]. Additional data manipulation was done by the authors using `dplyr` [@citeDplyr]. The graphs were created using the `ggplot2` package [@citeGgplot]. 
+
+## Data Source
+The dataset is sourced from the 2017 Canadian General Social Survey (GSS). The GSS is a survey that is conducted in order to "gather data on social trends in order to monitor changes in the living conditions and well-being of Canadians over time, and to provide information on specific social policy issues of current of emerging interest" [@citeFam]. This information is used to help decision-makers draft policies based on data. It is conducted on an annual basis, focusing on a single topic at a time [@citeGSS].This paper will be  analyzing the survey responses received during Cycle 31 of the GSS, which focused on Families. The Family cycle collected "information on conjugal and parental history (chronology of marriages, common-law unions and children), family origins, children's home leaving, fertility intentions and other socioeconomic characteristics" [@citeFam2]. They survey contained questions about "families, household and housing, educational attainment, ethnic diversity and immigration, aboriginal peoples and disability" [@citeFam2]. 
+
+## Methodology
+The GSS targets "all non-institutionalized persons 15 years of age or older, living in the 10 provinces of Canada" [@citeFam]. Statistics Canada used a field sample of approximately 43,000 units, with 34,000 invitation letters being sent out [@citeFam]. They targeted an estimated sample size of 20,000 questionnaires [@citeFam]. The data was collected from February 1, 2017 to November 30, 2017 [@citeFam]. Responses were collected on a voluntary basis through telephone interviews [@citeFam].The Family cycle saw an overall response rate of 52.4% [@citeFam].
+According to Statistics Canada, "a sample survey with a cross-sectional design" was used [@citeFam].A two stage sampling design was used, with the first being "groups of telephone numbers" and "individuals within the identified households" [@citeFam]. To ensure unique responses, only one person from each household was selected on a random basis for the interview [@citeFam].
+
+They state that they use their "common telephone frame, which combines landline and cellular telephone numbers from the Address Register, the Census of Population and various administrative sources" [@citeGSS]. The results of the survey may have been biased towards the population that had telephones, as those households that did not have telephones were not included in the sample size. However, Statistics Canada stated that "since these exclusions are small, one would expect the biases introduced to be small" [@citeFam].
+Data relating to income was derived through linkages to personal tax records in order to "enhance the data...and to minimize the reporting burden for respondents" [@citeFam2]. This was done only after the respondent expressed consent.
+
+While the GSS survey offers Indigenous respondents the chance to self identify, Statistics Canada acknowledges that "data are not available for First Nations people living on or off reserve specifically" [@citeGSS]. As a result, the data for First Nations people "must often be aggregated to the total Indigenous population in order to obtain population counts high enough to be reliable for production" [@citeGSS].
+Non-responses occurred at both the household and individual level. To account for this, the survey estimates were adjusted in order to "account for non-response cases" [@citeFam]. Furthermore, information about income and household composition were extracted from 2016 Census data to account for non-response [@citeFam]. 
+
+
+
+
+## Variables
+For the purposes of this paper, we chose to use 15 variables in our analysis as we wanted to see if these particular factors had an affect on mental health. Table \@ref(tab:var) provides the list of variables used and their descriptions. We created a new variable `age_range` to better showcase the data comparing age and mental health self rating. 
+
+It must be noted that the respondents were given the following choices to rate their mental health: excellent, very good, good, fair, poor and don't know. The choice to use these options rather than a numerical rating system was validated by Statistics Canada themselves, as they found that they were "strong positive associations between all mental morbidity measures" and the self rated mental health rating measure [@mawani2010validation].
+
+Table: (\#tab:var) Variables and their descriptions
+
+| Variable                 | Description of variable                         |  
+|--------------------------|-------------------------------------------------|
+| self_rated_mental_health | Self rating of mental health                    |
+| province                 | Province of respondent                          |
+| age                      | Age of respondent                               |
+| sex                      | Sex of respondent                               |
+| marital_status           | Marital status of respondent                    |
+| aboriginal               | Aboriginal status of respondent                 |
+| vis_minority             | Visible minority status of respondent           |
+| income_family            | Income level of family                          |
+| age_range                | Age group respondent belongs to                 |
+
+
+\newpage
+# Results {#results}
+
+## Mental Health Rating: Overall
+
+Figure \@ref(fig:fig1) shows how respondents rate their mental health overall. The most popular response is 'Very good', which was chosen by 6924 respondents. 
+
+```{r fig1, echo=FALSE, fig.cap = "Mental health self rating amongst all respondents in the 2017 Canadian General Social Survey", fig.width= 15}
+    clean_cgss |>
+    count(self_rated_mental_health) |>
+      ggplot() + aes(self_rated_mental_health, n, label = n, fill= self_rated_mental_health) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Mental health self rating", y = "Number of Respondents", fill = "Mental health self Rating")
+
+```
+
+
+## Mental Health Rating: Provinces
+
+Figure \@ref(fig:fig2) shows the breakdown of mental health self rating by province. The province with the highest number of respondents is Ontario (n = 5621). The province with the lowest number of respondents is Prince Edward Island (n = 708). With the exception of Quebec, the most popular category in every province is "Very good". Across all provinces, the least popular response, apart from NA, is "Poor". The top three responses in every province are, in no particular order, "Excellent", "Very good" and "Good". In Quebec, 1350 respondents rated their mental health as being "Excellent", which is the highest number among other rating categories.
+
+
+```{r fig2, echo=FALSE, fig.cap = "Mental health self rating by province in the 2017 Canadian General Social Survey", fig.width= 20, fig.height= 15}
+    
+clean_cgss %>%
+  count(province, self_rated_mental_health) %>%
+  ggplot() + aes(province, n, fill = self_rated_mental_health, label = n) + 
+  geom_col(position = 'dodge') + 
+  geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Province", y = "Number of Respondents", fill = "Mental health self rating")
+  
+```
+
+
+
+## Mental Health Rating: Age
+
+Figure \@ref(fig:fig3) shows the breakdown of mental health self rating by age group. The age group with the most respondents is the 60-65 year old group (n = 2062). The most popular response across all age groups is "Very good", with the exception of the 80-84 year old group, where the most popular response was "Good" (n = 398). The second most popular response amongst the all age groups apart from 40-44, 45-49,75-79 and 80-84 groups was "Excellent". 
+
+```{r fig3, echo=FALSE, fig.cap = "Mental health self rating by age group in the 2017 Canadian General Social Survey", fig.width= 15}
+    clean_cgss |>
+    count(age_range, self_rated_mental_health) |>
+      ggplot() + aes(age_range, n, fill = self_rated_mental_health, label = n) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Age group", y = "Number of Respondents", fill = "Mental health self Rating")
+
+```
+
+
+## Mental Health Rating: Sex
+Figure \@ref(fig:fig4) shows the breakdown of mental health self rating by sex. There were 11203 female respondents and 9399 male respondents. The most popular in both groups was "Very good" (Female, n = 3859 and Male, n = 3065). However, the second most popular response by 2957 Male respondents is "Excellent" and "Good" by 3220 Female respondents. The least popular response in both groups, excluding "Don't know" or "NA", is "Poor".
+
+```{r fig4, echo=FALSE, fig.cap = "Mental health self rating by sex in the 2017 Canadian General Social Survey", fig.width= 13}
+    clean_cgss |>
+    count(sex, self_rated_mental_health) |>
+      ggplot() + aes(sex, n, fill = self_rated_mental_health, label = n) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Sex", y = "Number of respondents", fill = "Mental health self rating ")
+   
+```
+
+
+
+## Mental Health Rating: Indigeneous Identity
+Figure \@ref(fig:fig5) shows the breakdown of mental health self rating by Indigenous identity. 792 respondents identified as Indigenous. The top three most popular responses amongst this group were "Good" (n = 267), "Very good" (n = 223) and "Excellent" (n = 174). 
+
+```{r fig5, echo=FALSE, fig.cap = "Mental health self rating in Indigenous population the 2017 Canadian General Social Survey", fig.width= 15}
+  
+    clean_cgss |>
+    count(aboriginal, self_rated_mental_health) |>
+      ggplot() + aes(aboriginal, n, fill = self_rated_mental_health, label = n) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Do you identify as Indigenous?", y = "Number of respondents", fill = "Mental health self rating ")
+
+```
+
+
+## Mental Health Rating: Visibile Minority Status
+Figure \@ref(fig:fig6) shows the breakdown of mental health self rating by visible minority status. 2574 respondents identified as a visible minority. The top three most popular responses amongst this group were "Excellent" (n = 806), "Very good" (n = 851) and 'Good" (n = 726). 
+
+```{r fig6, echo=FALSE, fig.cap = "Mental health self rating across visible minority population in the 2017 Canadian General Social Survey", fig.width= 15}
+    clean_cgss |>
+    count(vis_minority, self_rated_mental_health) |>
+      ggplot() + aes(vis_minority, n, fill = self_rated_mental_health, label = n) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal() + labs(x = "Do you identify as a visible minority?", y = "Number of respondents", fill = "Mental health self rating ")
+```
+
+
+## Mental Health Rating: Household Income
+
+Figure \@ref(fig:fig7) shows the breakdown of mental health self rating by household income level. The group with the most respondents was the '$125,000 and more group' (n = 4707) and the '$100,000 to $124,999' group (n = 2158). The top three responses in all income levels, in no particular order, are "Excellent", "Very good" and "Good". The top response of both the lower earning groups, 'Under $25,000' (n = 877) and '$25,000 to $49,000' (n = 1382), was "Good".  
+
+
+```{r fig7, echo=FALSE, fig.cap = "Mental health self rating by household income level in the 2017 Canadian General Social Survey", fig.width= 15}
+    clean_cgss |>
+    count(income_family, self_rated_mental_health) |>
+      ggplot() + aes(income_family, n, fill = self_rated_mental_health, label = n) + 
+      geom_col(position = 'dodge') + 
+      geom_text(position = position_dodge(width = 1), vjust = -0.5, hjust = 0.5) + theme_minimal()  + labs(x = "Income level", fill = "Mental health self rating", y = "Number of respondents")
+
+```
+
+
+
+\newpage 
+
+# Discussion {#discussion}
+
+## Quebecois report the most positive mental rating
+
+Out of 20,602 respondents, majority (n = 18,817) gave themselves a positive rating (i.e., those who chose "Excellent", ""Very good" and "Good"), as seen in Figure \@ref(fig:fig1). Respondents in Quebec seem to have the best mental health in the country (Figure (\@ref(fig:fig2)). In January 2022, the Quebec government announced that they would be investing $1.2 billion into improving mental health infrastructure [@Quebec]. Additionally, Quebec also reported the lowest prevalence of any mental disorder [@Palay]. Although, this may have changed since the advent of the COVID-19 pandemic.
+
+## Indigenous respondents report lower mental health ratings
+
+Out of 792 Indigenous respondents that took part in the survey, the most popular response was "Good" (n = 267) as seen in Figure \@ref(fig:fig5). Compared to the non-Indigenous respondents, whose most popular response was "Very good" (n = 5496), the rating seems lower. One of the contributing factors to this is lack of accessible mental health services, especially in younger Indigenous populations [@walker]. The Indigenous population in Canada faces systematic barriers to access "clean water, infrastructure, first-responder services and crisis response" [@walker]. Additionally, mental health resources that service Indigenous populations are "under-resourced" [@walker].
+
+
+## People who earn lower incomes report lower mental health ratings
+
+Figure ((\@ref(fig:fig7)) shows that respondents with lower income levels generally have lower mental health ratings. While still positive, the "least" positive response was chosen to describe their mental health. This finding is consistent with literature that has shown that "low levels of household income are associated with several lifetime mental disorders and suicide attempts, and a reduction in house hold income is associated with increased risk for incident of mental disorders" [@Sareen]. Another reason is that lower income households face more stress as they are trying to cope with the financial strain [@Sareen].
+
+\newpage
+
+\appendix
+
+# Appendix {-}
+
+Our survey can be found at https://forms.gle/sUTE5kPeAm9h8JJJ7
+
+
+\newpage
+
+
+# References
+
+
