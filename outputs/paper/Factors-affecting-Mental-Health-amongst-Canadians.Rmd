@@ -4,7 +4,7 @@ author:
   - Athaliah Biju and Yuxuan Zhao
 thanks: "Code and data are available at https://github.com/anb99/Factors-affecting-Mental-Health-in-Canadians"
 date: "26 March 2022"
-abstract: "This paper takes a look at mental health in Canada."
+abstract: "This paper takes a look at various factors mental health in Canadians. Thes includes things like income level, sex, visibile minority status, age, etc. We uncover some interesting trends from the data that can prove beneficial for policymakers."
 output:
   bookdown::pdf_document2
 toc: FALSE
@@ -35,8 +35,10 @@ library(knitr)
 # Introduction
 
 Mental health is one of the most compelling global trending subjects, particularly in Canada. It includes "our emotional, psychological and social well-being" [@cdc]. According to the WHO, 450 million people worldwide struggle with mental illness, which includes 6.7 million Canadians [@camh].
-Many different factors can affect our mental health. The main objective of this paper is to analyze how different socioeconomic variables influence mental health in Canadians, to see what information can be gleaned from the data we discovered, and how the statistics represent mental health in Canada.
-Our paper has been divided into 5 sections. Section \@ref(data) talks about the data, the data source, the methodology of the survey and variables. Section \@ref(results) visualizes and describes the data analysis. Section \@ref(discussion) goes throught some interesting trends.
+Many different factors can affect our mental health.ar The main objective of this paper is to analyze how different socioeconomic variables influence mental health in Canadians, to see what information can be gleaned from the data we discovered, and how the statistics represent mental health in Canada.
+Our paper has been divided into 5 sections. 
+Section \@ref(data) talks about the data, the data source, the methodology of the survey and variables. We will narrow the scope of the discussion to the components of the survey and then proceed to the main features. Section \@ref(results) visualizes and describes the data analysis. Section \@ref(discussion) is divided into three subsections where we discuss the interesting points that we uncovered from the data. The appendix contains the link to our supplemental survey.
+
 
 # Data {#data}
 
