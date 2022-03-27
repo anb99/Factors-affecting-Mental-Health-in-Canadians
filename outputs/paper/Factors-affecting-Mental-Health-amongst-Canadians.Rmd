@@ -2,8 +2,8 @@
 title: "Factors affecting Mental Health amongst Canadians"
 author: 
   - Athaliah Biju and Yuxuan Zhao
-thanks: "Code and data are available at https://github.com/anb99/"
-date: "`r format(Sys.time(), '%d %B %Y')`"
+thanks: "Code and data are available at https://github.com/anb99/Factors-affecting-Mental-Health-in-Canadians"
+date: "26 March 2022"
 abstract: "This paper takes a look at mental health in Canada."
 output:
   bookdown::pdf_document2
